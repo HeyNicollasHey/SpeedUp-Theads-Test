@@ -15,14 +15,12 @@ public class PerformanceTest {
     public static void main(String[] args) throws IOException {
         NUM_THREADS = 2;
 
-        // Lê os números do arquivo
         List<String> lines = Files.readAllLines(Paths.get(FILE_PATH));
         long[] numbers = new long[lines.size()];
         for (int i = 0; i < lines.size(); i++) {
             numbers[i] = Calibracao.valorCalibracao(lines.get(i));
         }
 
-        // 🔹 Execução com ForkJoinPool
         long start = System.nanoTime();
         ForkJoinPool pool = new ForkJoinPool(NUM_THREADS);
         long forkJoinSum = pool.invoke(new ForkJoinTask(numbers, 0, numbers.length));
@@ -31,7 +29,6 @@ public class PerformanceTest {
         System.out.println("Soma com ForkJoin: " + forkJoinSum + " | Tempo: " + (end - start) / 1_000_000 + " ms");
     }
 
-    // 🔴 Soma utilizando ForkJoinPool
     static class ForkJoinTask extends RecursiveTask<Long> {
         private long[] numbers;
         private int start, end;
@@ -55,9 +52,9 @@ public class PerformanceTest {
                 ForkJoinTask leftTask = new ForkJoinTask(numbers, start, mid);
                 ForkJoinTask rightTask = new ForkJoinTask(numbers, mid, end);
 
-                leftTask.fork(); // Inicia o cálculo de forma assíncrona
-                long rightResult = rightTask.fork().join(); // Calcula o lado direito
-                long leftResult = leftTask.join(); // Espera pelo cálculo do lado esquerdo
+                leftTask.fork();
+                long rightResult = rightTask.fork().join();
+                long leftResult = leftTask.join();
 
                 return leftResult + rightResult;
             }
@@ -65,7 +62,6 @@ public class PerformanceTest {
     }
 }
 
-// 🔹 Classe para extração do valor de calibração
 class Calibracao {
     public static int valorCalibracao(String linha) {
         Character primeiroCaractere = null;
